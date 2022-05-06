@@ -14,18 +14,23 @@ export class Actors extends Component {
       actorId: 0,
       modalTitle: '',
       movies: [],
-      allmovies: []
+      allmovies: [],
+      currentActor: '',
+      movieIdVal: ''
     };
   }
-  //close modal window with id exampleModal
-  closeModal() {
-    document.getElementById("exampleModal").tabIndex = -1;
-  }
+
+
 
   refreshList() {
     fetch(variables.API_URL + 'actors')
       .then(response => response.json())
       .then(data => this.setState({ actors: data }));
+  }
+  refreshListActorMovies() {
+    fetch(variables.API_URL + 'actors/' + this.state.currentActor + '/movies')
+      .then(response => response.json())
+      .then(data => this.setState({ movies: data }));
   }
 
   addActor(event) {
@@ -177,27 +182,31 @@ export class Actors extends Component {
       .then(response => response.json())
       .then(data => this.setState({ movies: data }));
     this.setState({ movies: [] });
+    this.setState({ currentActor: id });
   }
-  handleChange(event) {
-    this.setState({ value: event.target.value });
+  handleChange = (e) => {
+    this.setState({ movieIdVal: e.target.value });
+    console.log(this.state.movieIdVal);
   }
 
-  getallmovies() {
+  getallmovies(id) {
     fetch(variables.API_URL + 'movies')
       .then(response => response.json())
       .then(data => this.setState({ allmovies: data }));
+    this.setState({ currentActor: id });
+    console.log(this.currentActor)
   }
 
-  addactortomovie(actorid) {
-    fetch(variables.API_URL + 'actors/' + actorid + '/movie' + this.state.value, {
+  addactortomovie() {
+    fetch(variables.API_URL + 'actors/' + this.state.currentActor + '/movie/' + this.state.movieIdVal, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        actorId: actorid,
-        movieId: this.state.value
+        actorId: this.state.currentActor,
+        movieId: this.state.movieIdVal
       }),
     })
       .then(response => response.json())
@@ -207,14 +216,32 @@ export class Actors extends Component {
       }, error => {
         console.log(this.state.value)
       })
+    console.log(this.state.movieIdVal, this.state.currentActor);
+    this.setState({ currentActor: '' });
 
+  }
+
+  deletefrommovie(movieid) {
+    fetch(variables.API_URL + 'actors/' + this.state.currentActor + '/movie/' + movieid, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    })
+      .then(response => response.json())
+      .then(result => {
+        this.refreshList();
+      }, error => {
+        console.log(error);
+      })
   }
 
 
 
 
   render() {
-    const { actors, firstname, lastname, age, actorId, movies, allmovies } = this.state;
+    const { actors, firstname, lastname, age, actorId, movies, allmovies, movieIdVal } = this.state;
 
     return (
       <div>
@@ -245,8 +272,8 @@ export class Actors extends Component {
                 <td>
                   <button type="button" className="btn btn-light btn-outline-danger" onClick={() => this.deleteClick(actr.actorId)}>Delete</button>
                   <button type="button" className="btn btn-light btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => this.editClick(actr)}>Edit</button>
-                  <button type="button" className="btn btn-light btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#moviesModal" onClick={() => { this.actormovies(actr.actorId); this.getallmovies() }}>View</button>
-                  <button type="button" className="btn btn-light btn-outline-success" data-bs-toggle="modal" data-bs-target="#addModal" onClick={() => this.getallmovies()}>Add</button>
+                  <button type="button" className="btn btn-light btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#moviesModal" onClick={() => { this.actormovies(actr.actorId) }}>View</button>
+                  <button type="button" className="btn btn-light btn-outline-success" data-bs-toggle="modal" data-bs-target="#addModal" onClick={() => this.getallmovies(actr.actorId)}>Add</button>
                 </td>
 
               </tr>)}
@@ -299,16 +326,11 @@ export class Actors extends Component {
                   {actorId != 0 ?
                     <button type="button" className="btn btn-primary float-start" onClick={() => this.updateClick()}>Update</button> : null
                   }
-
-
-
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-
 
         <div className="modal fade" id="moviesModal" tabIndex="-1" aria-labelledby="moviesModal" aria-hidden="true">
           <div className="modal-dialog modal-lg modal-dialog-centered" role="document">
@@ -317,7 +339,6 @@ export class Actors extends Component {
                 <h5 className="modal-title" id="exampleModalLabel">
                   Movies
                 </h5>
-
                 <div className="modal-body">
                   <table className="table table-striped">
                     <thead>
@@ -332,6 +353,9 @@ export class Actors extends Component {
                         <tr key={movie.movieId}>
                           <td>{movie.title}</td>
                           <td>{movie.description}</td>
+                          <td>
+                            <button type="button" className="btn btn-light btn-outline-danger" onClick={() => { this.deletefrommovie(movie.movieId); this.refreshListActorMovies() }}>Delete</button>
+                          </td>
                         </tr>)}
                     </tbody>
                   </table>
@@ -350,17 +374,13 @@ export class Actors extends Component {
                 </h5>
 
                 <div className="modal-body">
-
-
-
                   <form onSubmit={() => this.addactortomovie()}>
-
-                    <select value={this.setState.value} onChange={this.handleChange}>
+                    <select value={movieIdVal} onChange={this.handleChange}>
                       {allmovies.map(movie =>
                         <option key={movie.movieId} value={movie.movieId}>{movie.title}</option>
                       )}
                     </select>
-                    <button type="submit" value="Submit" className="btn btn-outline-primary">Add</button>
+                    <button type="submit" value="Submit" className="btn btn-outline-primary" >Add</button>
                   </form>
 
 

@@ -16,7 +16,15 @@ export class Actors extends Component {
       movies: [],
       allmovies: [],
       currentActor: '',
-      movieIdVal: ''
+      movieIdVal: '',
+
+      actoridFilter: '',
+      firstnameFliter: '',
+      lastnameFliter: '',
+      ageFliter: '',
+      actorsWithoutFilter: []
+
+
     };
   }
 
@@ -25,13 +33,11 @@ export class Actors extends Component {
   refreshList() {
     fetch(variables.API_URL + 'actors')
       .then(response => response.json())
-      .then(data => this.setState({ actors: data }));
+      .then(data => this.setState({ actors: data, actorswithoutFilter: data }));
   }
-  refreshListActorMovies() {
-    fetch(variables.API_URL + 'actors/' + this.state.currentActor + '/movies')
-      .then(response => response.json())
-      .then(data => this.setState({ movies: data }));
-  }
+
+
+
 
   addActor(event) {
     event.preventDefault();
@@ -54,22 +60,47 @@ export class Actors extends Component {
       .then(data => this.setState({ actors: data }));
   }
 
+  FilterFn() {
+    var ActorsIdFilter = this.state.actoridFilter;
+    var FirstNameFilter = this.state.firstnameFliter;
+    var LastNameFilter = this.state.lastnameFliter;
+    var AgeFilter = this.state.ageFliter;
+    var filteredData = this.state.actorsWithoutFilter.filter(
+      function (el) {
+        return el.actorId.toString().includes(ActorsIdFilter).toString().trim().toLowerCase()
+          && el.firstName.includes(FirstNameFilter).toString().trim().toLowerCase()
+          && el.lastName.includes(LastNameFilter).toString().trim().toLowerCase()
+          && el.age.includes(AgeFilter);
+      }
+    )
+    this.setState({ actors: filteredData });
 
 
+  }
 
   componentDidMount() {
     this.refreshList();
-
+  }
+  changeActorIdFilter = (e) => {
+    this.setState({ actoridFilter: e.target.value });
+    this.FilterFn();
   }
 
   changeactorfirstname = (e) => {
     this.setState({ firstname: e.target.value });
+    this.setState({ firstnameFliter: e.target.value });
+    this.FilterFn();
+
   }
   changeactorlastname = (e) => {
     this.setState({ lastname: e.target.value });
+    this.setState({ lastnameFliter: e.target.value });
+    this.FilterFn();
   }
   changeage = (e) => {
     this.setState({ age: e.target.value });
+    this.setState({ ageFliter: e.target.value });
+    this.FilterFn();
   }
   addClick = (e) => {
     this.setState({
@@ -235,6 +266,8 @@ export class Actors extends Component {
       }, error => {
         console.log(error);
       })
+    this.actormovies(this.state.currentActor);
+
   }
 
 
@@ -253,7 +286,13 @@ export class Actors extends Component {
         <table className="table table-striped">
           <thead>
             <tr>
-              <th scope="col">#</th>
+              <th>
+                <input className="form-control m-2"
+                  onChange={this.changeActorIdFilter}
+                  placeholder="Id" />
+                #
+              </th>
+
               <th scope="col">First Name</th>
               <th scope="col">Last Name</th>
               <th scope="col">Age</th>
@@ -354,7 +393,7 @@ export class Actors extends Component {
                           <td>{movie.title}</td>
                           <td>{movie.description}</td>
                           <td>
-                            <button type="button" className="btn btn-light btn-outline-danger" onClick={() => { this.deletefrommovie(movie.movieId); this.refreshListActorMovies() }}>Delete</button>
+                            <button type="button" className="btn btn-light btn-outline-danger" onClick={() => this.deletefrommovie(movie.movieId)}>Delete</button>
                           </td>
                         </tr>)}
                     </tbody>

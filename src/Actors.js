@@ -289,7 +289,6 @@ export class Actors extends Component {
 
     return (
       <div>
-        <button type="button" className="btn btn-light btn-outline-success float-start  " data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => this.addClick()}>Create</button>
         <table className="table table-striped">
           <thead>
             <tr>
@@ -313,12 +312,15 @@ export class Actors extends Component {
                 Last Name
               </th>
               <th scope="col">
-                <input type="number" className="form-control m-2"
+                {/* <input type="number" className="form-control m-2"
                   onChange={this.changeAgeFilter}
-                  placeholder="Age" />
+                  placeholder="Age" /> */}
                 Age
               </th>
+              <th scope="col">
+                <button type="button" className="btn btn-light btn-outline-success float-end" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => this.addClick()}>Create</button>
 
+              </th>
             </tr>
           </thead>
           <tbody>

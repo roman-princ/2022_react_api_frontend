@@ -1,18 +1,18 @@
 import logo from './logo.svg';
 import './App.css';
-import {Home} from './Home.js';  
-import {Actors} from './Actors.js'; 
-import {Movies} from './Movies.js';
-import {BrowserRouter, Route, NavLink, Routes} from 'react-router-dom';
+import { Home } from './Home.js';
+import { Actors } from './Actors.js';
+import { Movies } from './Movies.js';
+import { BrowserRouter, Route, NavLink, Routes } from 'react-router-dom';
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="App container">
+      <div className="App-container">
         <h3 className="d-flex justify-content-center m-3">
           React JS Frontend
         </h3>
-          
+
         <nav className="navbar navbar-expand-sm bg-light navbar-dark">
           <ul className="navbar-nav">
             <li className="nav-item- m-1">
@@ -37,7 +37,7 @@ function App() {
           <Route path="/actors" element={<Actors />} />
           <Route path="/movies" element={<Movies />} />
         </Routes>
-        
+
       </div>
     </BrowserRouter>
   );

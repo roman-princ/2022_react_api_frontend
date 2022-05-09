@@ -18,10 +18,10 @@ export class Actors extends Component {
       currentActor: '',
       movieIdVal: '',
 
-      actoridFilter: '',
+      actoridFilter: 0,
       firstnameFliter: '',
       lastnameFliter: '',
-      ageFliter: '',
+      ageFliter: 0,
       actorsWithoutFilter: []
 
 
@@ -33,7 +33,7 @@ export class Actors extends Component {
   refreshList() {
     fetch(variables.API_URL + 'actors')
       .then(response => response.json())
-      .then(data => this.setState({ actors: data, actorswithoutFilter: data }));
+      .then(data => this.setState({ actors: data, actorsWithoutFilter: data }));
   }
 
 
@@ -67,12 +67,11 @@ export class Actors extends Component {
     var AgeFilter = this.state.ageFliter;
     var filteredData = this.state.actorsWithoutFilter.filter(
       function (el) {
-        return el.actorId.toString().includes(ActorsIdFilter).toString().trim().toLowerCase()
-          && el.firstName.includes(FirstNameFilter).toString().trim().toLowerCase()
-          && el.lastName.includes(LastNameFilter).toString().trim().toLowerCase()
-          && el.age.includes(AgeFilter);
-      }
-    )
+        return el.actorId.toString().toLowerCase().startsWith(ActorsIdFilter.toString().trim().toLowerCase())
+          && el.firstName.toString().toLowerCase().startsWith(FirstNameFilter.toString().trim().toLowerCase())
+          && el.lastName.toString().toLowerCase().startsWith(LastNameFilter.toString().trim().toLowerCase())
+
+      });
     this.setState({ actors: filteredData });
 
 
@@ -82,25 +81,31 @@ export class Actors extends Component {
     this.refreshList();
   }
   changeActorIdFilter = (e) => {
-    this.setState({ actoridFilter: e.target.value });
+    this.state.actoridFilter = e.target.value;
+    this.FilterFn();
+
+  }
+  changeFirstNameFilter = (e) => {
+    this.state.firstnameFliter = e.target.value;
+    this.FilterFn();
+  }
+  changeLastNameFilter = (e) => {
+    this.state.lastnameFliter = e.target.value;
+    this.FilterFn();
+  }
+  changeAgeFilter = (e) => {
+    this.state.ageFliter = e.target.value;
     this.FilterFn();
   }
 
   changeactorfirstname = (e) => {
     this.setState({ firstname: e.target.value });
-    this.setState({ firstnameFliter: e.target.value });
-    this.FilterFn();
-
   }
   changeactorlastname = (e) => {
     this.setState({ lastname: e.target.value });
-    this.setState({ lastnameFliter: e.target.value });
-    this.FilterFn();
   }
   changeage = (e) => {
     this.setState({ age: e.target.value });
-    this.setState({ ageFliter: e.target.value });
-    this.FilterFn();
   }
   addClick = (e) => {
     this.setState({
@@ -112,7 +117,7 @@ export class Actors extends Component {
     });
 
   }
-  generateUUID() { // Public Domain/MIT
+  generateGUID() { // Public Domain/MIT
     var d = new Date().getTime();//Timestamp
     var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -143,7 +148,7 @@ export class Actors extends Component {
     fetch(variables.API_URL + 'actors', {
       method: 'POST',
       body: JSON.stringify({
-        actorId: this.generateUUID(),
+        actorId: this.generateGUID(),
         firstName: this.state.firstname,
         lastName: this.state.lastname,
         age: this.state.age
@@ -269,6 +274,12 @@ export class Actors extends Component {
     this.actormovies(this.state.currentActor);
 
   }
+  movieswithoutactor(id) {
+    fetch(variables.API_URL + 'actors/' + id + '/movies/notin')
+      .then(response => response.json())
+      .then(data => this.setState({ allmovies: data }));
+    this.setState({ currentActor: id });
+  }
 
 
 
@@ -279,10 +290,6 @@ export class Actors extends Component {
     return (
       <div>
         <button type="button" className="btn btn-light btn-outline-success float-start  " data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => this.addClick()}>Create</button>
-        <div className="input-group mb-2">
-          <input type="text" className="form-control float-end" placeholder="Search" aria-label="Search" aria-describedby="basic-addon2" style={{ width: "100px" }} onChange={this.handleChange} />
-
-        </div>
         <table className="table table-striped">
           <thead>
             <tr>
@@ -293,9 +300,24 @@ export class Actors extends Component {
                 #
               </th>
 
-              <th scope="col">First Name</th>
-              <th scope="col">Last Name</th>
-              <th scope="col">Age</th>
+              <th scope="col">
+                <input className="form-control m-2"
+                  onChange={this.changeFirstNameFilter}
+                  placeholder="First Name" />
+                First Name
+              </th>
+              <th scope="col">
+                <input type="text" className="form-control m-2"
+                  onChange={this.changeLastNameFilter}
+                  placeholder="Last Name" />
+                Last Name
+              </th>
+              <th scope="col">
+                <input type="number" className="form-control m-2"
+                  onChange={this.changeAgeFilter}
+                  placeholder="Age" />
+                Age
+              </th>
 
             </tr>
           </thead>
@@ -312,7 +334,7 @@ export class Actors extends Component {
                   <button type="button" className="btn btn-light btn-outline-danger" onClick={() => this.deleteClick(actr.actorId)}>Delete</button>
                   <button type="button" className="btn btn-light btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" onClick={() => this.editClick(actr)}>Edit</button>
                   <button type="button" className="btn btn-light btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#moviesModal" onClick={() => { this.actormovies(actr.actorId) }}>View</button>
-                  <button type="button" className="btn btn-light btn-outline-success" data-bs-toggle="modal" data-bs-target="#addModal" onClick={() => this.getallmovies(actr.actorId)}>Add</button>
+                  <button type="button" className="btn btn-light btn-outline-success" data-bs-toggle="modal" data-bs-target="#addModal" onClick={() => this.movieswithoutactor(actr.actorId)}>Add</button>
                 </td>
 
               </tr>)}
@@ -396,6 +418,8 @@ export class Actors extends Component {
                             <button type="button" className="btn btn-light btn-outline-danger" onClick={() => this.deletefrommovie(movie.movieId)}>Delete</button>
                           </td>
                         </tr>)}
+                      &nbsp;
+                      <p>Plays in  movies</p>
                     </tbody>
                   </table>
                 </div>

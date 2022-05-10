@@ -21,7 +21,6 @@ export class Actors extends Component {
       actoridFilter: 0,
       firstnameFliter: '',
       lastnameFliter: '',
-      ageFliter: 0,
       actorsWithoutFilter: []
 
 
@@ -70,7 +69,6 @@ export class Actors extends Component {
         return el.actorId.toString().toLowerCase().startsWith(ActorsIdFilter.toString().trim().toLowerCase())
           && el.firstName.toString().toLowerCase().startsWith(FirstNameFilter.toString().trim().toLowerCase())
           && el.lastName.toString().toLowerCase().startsWith(LastNameFilter.toString().trim().toLowerCase())
-
       });
     this.setState({ actors: filteredData });
 
@@ -93,10 +91,7 @@ export class Actors extends Component {
     this.state.lastnameFliter = e.target.value;
     this.FilterFn();
   }
-  changeAgeFilter = (e) => {
-    this.state.ageFliter = e.target.value;
-    this.FilterFn();
-  }
+
 
   changeactorfirstname = (e) => {
     this.setState({ firstname: e.target.value });
@@ -117,26 +112,19 @@ export class Actors extends Component {
     });
 
   }
-  generateGUID() { // Public Domain/MIT
-    var d = new Date().getTime();//Timestamp
-    var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0;//Time in microseconds since page-load or 0 if unsupported
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      var r = Math.random() * 16;//random number between 0 and 16
-      if (d > 0) {//Use timestamp until depleted
-        r = (d + r) % 16 | 0;
-        d = Math.floor(d / 16);
-      } else {//Use microseconds since page-load if supported
-        r = (d2 + r) % 16 | 0;
-        d2 = Math.floor(d2 / 16);
-      }
-      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(18);
-    });
+  generateGUID() {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
   }
 
 
   editClick(actr) {
     this.setState({
-      modalTitle: 'Edit Actor',
       actorId: actr.actorId,
       firstname: actr.firstName,
       lastname: actr.lastName,
@@ -268,10 +256,11 @@ export class Actors extends Component {
       .then(response => response.json())
       .then(result => {
         this.refreshList();
+        this.actormovies(this.state.currentActor);
       }, error => {
         console.log(error);
       })
-    this.actormovies(this.state.currentActor);
+
 
   }
   movieswithoutactor(id) {
@@ -312,9 +301,7 @@ export class Actors extends Component {
                 Last Name
               </th>
               <th scope="col">
-                {/* <input type="number" className="form-control m-2"
-                  onChange={this.changeAgeFilter}
-                  placeholder="Age" /> */}
+
                 Age
               </th>
               <th scope="col">
@@ -406,9 +393,8 @@ export class Actors extends Component {
                   <table className="table table-striped">
                     <thead>
                       <tr>
-                        <th scope="col">Title</th>
-                        <th scope="col">Description</th>
-
+                        <th scope="col">First Name</th>
+                        <th scope="col">Last Name</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -420,8 +406,6 @@ export class Actors extends Component {
                             <button type="button" className="btn btn-light btn-outline-danger" onClick={() => this.deletefrommovie(movie.movieId)}>Delete</button>
                           </td>
                         </tr>)}
-                      &nbsp;
-                      <p>Plays in  movies</p>
                     </tbody>
                   </table>
                 </div>

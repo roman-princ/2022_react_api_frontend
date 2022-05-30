@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { variables } from "./variables.js";
+import "./index.css";
+const axios = require('axios').default;
 
 export class Movies extends Component {
   constructor(props) {
@@ -20,10 +22,18 @@ export class Movies extends Component {
   }
 
   refreshList() {
-    fetch(variables.API_URL + 'movies')
-      .then(response => response.json())
-      .then(data => this.setState({ movies: data, moviesWithoutFilter: data }));
+    axios.get(variables.API_URL + 'movies')
+      .then(function (response) {
+        this.setState({ movies: response.data, moviesWithoutFilter: response.data });
+      }.bind(this))
+      .catch(function (error) {
+        alert(error);
+      }
+      );
   }
+
+
+
 
   FilterFn() {
     var MoviesIdFilter = this.state.movieIdFilter;
@@ -53,12 +63,11 @@ export class Movies extends Component {
 
 
   deleteMovie(movieId) {
-    fetch(variables.API_URL + 'movies/' + movieId, {
-      method: 'DELETE'
-    }).then(() => {
-      this.refreshList();
-    }
-    );
+    axios.delete(variables.API_URL + 'movies/' + movieId)
+      .then(() => {
+        this.refreshList();
+      }
+      );
   }
 
   generateGUID() {
@@ -78,37 +87,28 @@ export class Movies extends Component {
   }
 
   createClick() {
-    fetch(variables.API_URL + 'movies', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        id: this.generateGUID(),
-        title: this.state.title,
-        description: this.state.description
-      })
-    }).then(() => {
-      this.refreshList();
-    }
-    );
+    axios.post(variables.API_URL + 'movies', {
+      id: this.generateGUID(),
+      title: this.state.title,
+      description: this.state.description
+    })
+      .then(() => {
+        this.refreshList();
+      }
+      );
   }
   updateClick() {
-    fetch(variables.API_URL + 'movies/' + this.state.movieId, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        movieId: this.state.movieId,
-        title: this.state.title,
-        description: this.state.description
-      })
-    }).then(() => {
-      this.refreshList();
-    }
-    );
+    axios.put(variables.API_URL + 'movies/' + this.state.movieId, {
+      movieId: this.state.movieId,
+      title: this.state.title,
+      description: this.state.description
+    })
+      .then(() => {
+        this.refreshList();
+      }
+      );
   }
+
 
   addClick = (e) => {
     this.setState({

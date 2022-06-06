@@ -12,7 +12,6 @@ export class Movies extends Component {
       movieId: 0,
       title: '',
       description: '',
-      movieId: 0,
 
       movieIdFilter: '',
       titleFilter: '',
@@ -49,15 +48,15 @@ export class Movies extends Component {
 
   }
   changeMovieIdFilter = (e) => {
-    this.state.movieIdFilter = e.target.value;
+    this.setState({ movieIdFilter: e.target.value });
     this.FilterFn();
   }
   changeTitleFilter = (e) => {
-    this.state.titleFilter = e.target.value;
+    this.setState({ titleFilter: e.target.value });
     this.FilterFn();
   }
   changeDescriptionFilter = (e) => {
-    this.state.descriptionFilter = e.target.value;
+    this.setState({ descriptionFilter: e.target.value });
     this.FilterFn();
   }
 
@@ -120,47 +119,45 @@ export class Movies extends Component {
   }
 
   editClick(movieId) {
-    fetch(variables.API_URL + 'movies/' + movieId)
-      .then(response => response.json())
-      .then(data => {
+    axios.get(variables.API_URL + 'movies/' + movieId)
+      .then(function (response) {
         this.setState({
-          movieId: data.movieId,
-          title: data.title,
-          description: data.description
+          movieId: response.data.movieId,
+          title: response.data.title,
+          description: response.data.description
         });
+      }.bind(this))
+      .catch(function (error) {
+        alert(error);
       }
       );
   }
 
+
+
   actorsinmovie(id) {
-    fetch(variables.API_URL + 'movies/' + id + '/actors')
-      .then(response => response.json())
-      .then(data => {
-        this.setState({ actors: data });
+    axios.get(variables.API_URL + 'movies/' + id + '/actors')
+      .then(function (response) {
+        this.setState({ actors: response.data });
+      }.bind(this))
+      .catch(function (error) {
+        alert(error);
       }
       );
-    console.log(this.state.actors);
     this.setState({ actors: [] });
     this.setState({ movieId: id });
   }
+
   deletefrommovie(actorId) {
-    fetch(variables.API_URL + 'actors/' + actorId + '/movie/' + this.state.movieId, {
-      method: 'DELETE',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    })
-      .then(response => response.json())
-      .then(result => {
+    axios.delete(variables.API_URL + 'actors/' + actorId + '/movie/' + this.state.movieId)
+      .then(() => {
         this.refreshList();
         this.actorsinmovie(this.state.movieId);
-      }, error => {
-        console.log(error);
-      })
-
-
+      }
+      );
   }
+
+
 
 
   componentDidMount() {
@@ -239,11 +236,11 @@ export class Movies extends Component {
                       name="description" />
                   </div>
 
-                  {movieId == 0 ?
+                  {movieId === 0 ?
                     <button type="button" className="btn btn-primary float-start" onClick={() => this.createClick()}>Add</button> : null
                   }
 
-                  {movieId != 0 ?
+                  {movieId !== 0 ?
                     <button type="button" className="btn btn-primary float-start" onClick={() => this.updateClick()}>Save</button> : null
                   }
                 </div>
@@ -269,15 +266,16 @@ export class Movies extends Component {
                       </tr>
                     </thead>
                     <tbody>
-                      {actors.map(actrs =>
-                        <tr key={actrs.actorId}>
-                          <td>{actrs.firstName}</td>
-                          <td>{actrs.lastName}</td>
-                          <td>{actrs.age}</td>
+                      {actors.map(actor =>
+                        <tr key={actor.actorId}>
+                          <td>{actor.firstName}</td>
+                          <td>{actor.lastName}</td>
+                          <td>{actor.age}</td>
                           <td>
-                            <button type="button" className="btn btn-light btn-outline-danger" onClick={() => this.deletefrommovie(actrs.actorId)}>Delete</button>
+                            <button type="button" className="btn btn-light btn-outline-danger" onClick={() => this.deletefrommovie(actor.actorId)}>Delete</button>
                           </td>
-                        </tr>)}
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>

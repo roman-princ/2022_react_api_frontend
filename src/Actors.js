@@ -1,6 +1,9 @@
 import { tsConstructorType } from "@babel/types";
 import React, { Component } from "react";
 import { variables } from "./variables.js";
+import "./index.css";
+const axios = require('axios').default;
+
 
 
 export class Actors extends Component {
@@ -30,10 +33,21 @@ export class Actors extends Component {
 
 
   refreshList() {
-    fetch(variables.API_URL + 'actors')
-      .then(response => response.json())
-      .then(data => this.setState({ actors: data, actorsWithoutFilter: data }));
+    axios.get(variables.API_URL + 'actors')
+      .then(response => {
+        this.setState({ actors: response.data });
+        this.setState({ actorsWithoutFilter: response.data });
+      }
+      )
+      .catch(error => {
+        alert(error);
+      }
+      )
   }
+
+
+
+
 
 
 
@@ -47,16 +61,9 @@ export class Actors extends Component {
       lastName: data.get('lastName'),
       age: data.get('age')
     };
-    fetch(variables.API_URL + 'actors', {
-      method: 'POST',
-      body: JSON.stringify(json),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+    axios.post(variables.API_URL + 'actors', {
+      body: JSON.stringify(json)
     })
-      .then(response => response.json())
-      .then(data => this.setState({ actors: data }));
   }
 
   FilterFn() {
@@ -85,10 +92,12 @@ export class Actors extends Component {
   }
   changeFirstNameFilter = (e) => {
     this.state.firstnameFliter = e.target.value;
+    //this.setState({ firstnameFliter: e.target.value });
     this.FilterFn();
   }
   changeLastNameFilter = (e) => {
     this.state.lastnameFliter = e.target.value;
+    //this.setState({ lastnameFliter: e.target.value });
     this.FilterFn();
   }
 
@@ -133,142 +142,126 @@ export class Actors extends Component {
   }
 
   createClick() {
-    fetch(variables.API_URL + 'actors', {
-      method: 'POST',
-      body: JSON.stringify({
-        actorId: this.generateGUID(),
-        firstName: this.state.firstname,
-        lastName: this.state.lastname,
-        age: this.state.age
-      }),
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
+    axios.post(variables.API_URL + 'actors', {
+      actorId: this.generateGUID(),
+      firstName: this.state.firstname,
+      lastName: this.state.lastname,
+      age: this.state.age
     })
-      .then(response => response.json())
-      .then(result => {
-        alert("success");
+      .then(response => {
         this.refreshList();
-      }, error => {
-        alert("failed");
-      })
-
+      }
+      )
+      .catch(error => {
+        console.log(error);
+      }
+      )
   }
+
 
   updateClick() {
-    fetch(variables.API_URL + 'actors/' + this.state.actorId, {
-      method: 'PUT',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        actorId: this.state.actorId,
-        firstName: this.state.firstname,
-        lastName: this.state.lastname,
-        age: this.state.age
-      }),
-
+    axios.put(variables.API_URL + 'actors/' + this.state.actorId, {
+      firstName: this.state.firstname,
+      lastName: this.state.lastname,
+      age: this.state.age
     })
-      .then(response => response.json())
-      .then(result => {
-        alert("success");
+      .then(response => {
         this.refreshList();
-        this.closeModal();
-      }, error => {
-        console.log(error);
-        this.refreshList();
-      })
-
+      }
+      )
+      .catch(error => {
+        alert(error);
+      }
+      )
   }
+
 
   deleteClick(id) {
-    fetch(variables.API_URL + 'actors/' + id, {
-      method: 'DELETE',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
+    axios.delete(variables.API_URL + 'actors/' + id)
+      .then(response => {
+        this.refreshList();
       }
-    })
-      .then(response => response.json())
-      .then(result => {
-        alert(result);
-        this.refreshList();
-      }, error => {
-        this.refreshList();
-        console.log(error);
-      })
+      )
+      .catch(error => {
+        alert(error);
+      }
+      )
   }
 
+
   actormovies(id) {
-    fetch(variables.API_URL + 'actors/' + id + '/movies')
-      .then(response => response.json())
-      .then(data => this.setState({ movies: data }));
-    this.setState({ movies: [] });
+    axios.get(variables.API_URL + 'actors/' + id + '/movies')
+      .then(response => {
+        this.setState({ movies: response.data });
+      }
+      )
+      .catch(error => {
+        alert(error);
+      }
+      )
     this.setState({ currentActor: id });
   }
+
   handleChange = (e) => {
     this.setState({ movieIdVal: e.target.value });
     console.log(this.state.movieIdVal);
   }
 
   getallmovies(id) {
-    fetch(variables.API_URL + 'movies')
-      .then(response => response.json())
-      .then(data => this.setState({ allmovies: data }));
+    axios.get(variables.API_URL + 'movies')
+      .then(response => {
+        this.setState({ allmovies: response.data });
+      }
+      )
+      .catch(error => {
+        alert(error);
+      }
+      )
     this.setState({ currentActor: id });
-    console.log(this.currentActor)
   }
+
 
   addactortomovie() {
-    fetch(variables.API_URL + 'actors/' + this.state.currentActor + '/movie/' + this.state.movieIdVal, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        actorId: this.state.currentActor,
-        movieId: this.state.movieIdVal
-      }),
-    })
-      .then(response => response.json())
-      .then(result => {
-        alert("success");
+    axios.post(variables.API_URL + 'actors/' + this.state.currentActor + '/movie/' + this.state.movieIdVal)
+      .then(response => {
         this.refreshList();
-      }, error => {
-        console.log(this.state.value)
-      })
-    console.log(this.state.movieIdVal, this.state.currentActor);
+      }
+      )
+      .catch(error => {
+        console.log(error);
+        alert(error);
+      }
+      )
     this.setState({ currentActor: '' });
-
   }
+
 
   deletefrommovie(movieid) {
-    fetch(variables.API_URL + 'actors/' + this.state.currentActor + '/movie/' + movieid, {
-      method: 'DELETE',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      }
-    })
-      .then(response => response.json())
-      .then(result => {
+    axios.delete(variables.API_URL + 'actors/' + this.state.currentActor + '/movies/' + movieid)
+      .then(response => {
         this.refreshList();
         this.actormovies(this.state.currentActor);
-      }, error => {
-        console.log(error);
-      })
-
-
+      }
+      )
+      .catch(error => {
+        alert(error);
+      }
+      )
   }
+
   movieswithoutactor(id) {
-    fetch(variables.API_URL + 'actors/' + id + '/movies/notin')
-      .then(response => response.json())
-      .then(data => this.setState({ allmovies: data }));
+    axios.get(variables.API_URL + 'actors/' + id + '/movies/notin')
+      .then(response => {
+        this.setState({ allmovies: response.data });
+      }
+      )
+      .catch(error => {
+        alert(error);
+      }
+      )
     this.setState({ currentActor: id });
   }
+
 
 
 
@@ -390,24 +383,30 @@ export class Actors extends Component {
                   Movies
                 </h5>
                 <div className="modal-body">
-                  <table className="table table-striped">
-                    <thead>
-                      <tr>
-                        <th scope="col">First Name</th>
-                        <th scope="col">Last Name</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {movies.map(movie =>
-                        <tr key={movie.movieId}>
-                          <td>{movie.title}</td>
-                          <td>{movie.description}</td>
-                          <td>
-                            <button type="button" className="btn btn-light btn-outline-danger" onClick={() => this.deletefrommovie(movie.movieId)}>Delete</button>
-                          </td>
-                        </tr>)}
-                    </tbody>
-                  </table>
+                  {movies.length == 0 ?
+                    <h2>No movies</h2> : null
+                  }
+                  {movies.length != 0 ?
+                    <table className="table table-striped">
+                      <thead>
+                        <tr>
+                          <th scope="col">First Name</th>
+                          <th scope="col">Last Name</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {movies.map(movie =>
+                          <tr key={movie.movieId}>
+                            <td>{movie.title}</td>
+                            <td>{movie.description}</td>
+                            <td>
+                              <button type="button" className="btn btn-light btn-outline-danger" onClick={() => this.deletefrommovie(movie.movieId)}>Delete</button>
+                            </td>
+                          </tr>)}
+                      </tbody>
+                    </table> : null
+                  }
+
                 </div>
               </div>
             </div>
@@ -431,19 +430,11 @@ export class Actors extends Component {
                     </select>
                     <button type="submit" value="Submit" className="btn btn-outline-primary" >Add</button>
                   </form>
-
-
-
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-
-
-
-
       </div >
 
 

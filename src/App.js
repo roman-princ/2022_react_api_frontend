@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import { Actors } from './Actors.js';
 import { Movies } from './Movies.js';
